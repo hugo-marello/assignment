@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -30,7 +29,7 @@ public class StatisticsApiTest {
 	@Test
 	public void mustRetrieveStatistics() {
 		api.getStatistics();
-		verify(service,times(1)).retrieve(ArgumentMatchers.isNotNull());
+		verify(service,times(1)).retrieve();
 	}
 	
 	@Test(expected=BadRequestException.class)

@@ -12,21 +12,30 @@ public class CircularTimeArray<T>{
 		}
 	}
 	
-	public boolean hasPredictionFor(Long timeStamp) {
+	public boolean hasPredictionFor(Long timestamp) {
 		for(TimeStructure<T> structure : predictions) {
-			if(structure.hasKey(timeStamp)) {
+			if(structure.hasKey(timestamp)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	public T getPrediction(Long timeStamp) {
+	public TimeStructure<T> getPrediction(Long timestamp) {
 		for(TimeStructure<T> structure : predictions) {
-			if(structure.hasKey(timeStamp)) {
-				return structure.getValue(timeStamp);
+			if(structure.hasKey(timestamp)) {
+				return structure;
 			}
 		}
 		return null;
 	}
+	
+//	public void addPrediction(Long timestamp) {
+//		Stream<T> result;
+//		if(hasPredictionFor(timestamp)) {
+//			TimeStructure<T> prediction = getPrediction(timestamp);
+//			int startIndex = prediction.getIndexOf(timestamp);
+//			result = prediction.slice(startIndex, null);
+//		}
+//	}
 }

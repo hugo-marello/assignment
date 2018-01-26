@@ -1,8 +1,9 @@
 package com.n26.assignment.service;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
@@ -10,40 +11,46 @@ import org.springframework.stereotype.Service;
 import com.n26.assignment.dto.StatisticsDto;
 import com.n26.assignment.dto.TransactionDto;
 import com.n26.assignment.exception.NoContentException;
-import com.n26.assignment.util.CircularTimeArray;
-import com.n26.assignment.util.TimeStructure;
 
 @Service
 @Scope
 public class StatisticsService {
 	public final static long TIME_TO_LIVE = 60000;
-	private CircularTimeArray<StatisticsDto> predictionsArray = new CircularTimeArray<StatisticsDto>(2, 60);
-	
-	
-	public StatisticsDto retrieve(Long currentTime) {
-		if(predictionsArray.hasPredictionFor(currentTime)) {
-			return predictionsArray.getPrediction(currentTime);
+	protected List<TransactionDto> cache = new ArrayList<TransactionDto>();
+
+	public StatisticsDto retrieve() {
+		StatisticsDto result = new StatisticsDto();
+		Iterator<TransactionDto> iterator = cache.iterator();
+		Instant currentTime = Instant.now();
+		
+		while (iterator.hasNext()) {
+			TransactionDto transaction = iterator.next();
+			if (isOnTime(transaction, currentTime)) {
+				result.newEntry(transaction.getAmount());
+			} else {
+				iterator.remove();
+			}
 		}
-		return new StatisticsDto();
+		return result;
 	}
-	
+
 	public void add(TransactionDto transaction) {
-    	if ( isOnTime(transaction.getTimestamp()) ){
-    		//TODO
-    	} else {
-    		throw new NoContentException();
-    	}
+		if (isOnTime(transaction, Instant.now())) {
+			// inserting in order
+			int index;
+			for (index = 0; index < cache.size()
+					&& transaction.getTimestamp() > cache.get(index).getTimestamp(); index++) { }
+
+			cache.add(index, transaction);
+		} else {
+			throw new NoContentException();
+		}
 	}
-	
-    public boolean isOnTime(long value) {
-    	Instant currentTime = Instant.now();
-    	Instant limitTime = currentTime.minusMillis(StatisticsService.TIME_TO_LIVE);
-    	Instant transactionTime = Instant.ofEpochMilli(value);
-    	
-    	return transactionTime.isAfter(limitTime) && transactionTime.isBefore(currentTime);
-    }
-    
-    private Long makeKey(Long time) {
-    	return time/ 60000; //this will remove the seconds
-    }
+
+	private boolean isOnTime(TransactionDto value, Instant currentTime) {
+		Instant limitTime = currentTime.minusMillis(StatisticsService.TIME_TO_LIVE);
+		Instant transactionTime = Instant.ofEpochMilli(value.getTimestamp());
+
+		return transactionTime.isAfter(limitTime) && transactionTime.isBefore(currentTime);
+	}
 }

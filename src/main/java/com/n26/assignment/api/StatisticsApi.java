@@ -1,7 +1,5 @@
 package com.n26.assignment.api;
 
-import java.time.Instant;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +33,7 @@ public class StatisticsApi {
 	@RequestMapping(path = "statistics", method = RequestMethod.GET)
 	@ResponseBody
 	public ResponseEntity<StatisticsDto> getStatistics() {
-		return ResponseEntity.ok(service.retrieve(Instant.now().toEpochMilli()));
+		return ResponseEntity.ok(service.retrieve());
 	}
 
 }
